@@ -1,0 +1,33 @@
+Scrape.
+
+This program is to be used to easily parse out either single items or lists of items from input streams.
+
+It works by being given a regexp, assumedly with captures, that represents each item in the list of things you want to scrape from a stream.
+It then outputs, in order, all of the captures from all occurences of that regexp found in the stream.
+The captures are all wrapped in curly braces, and while a capture may contain newlines, each set of wrapped captures for each item will take up only a line.
+
+For example:
+echo "<div>This is text one</div><div>This is text two</div><div>This text
+has a newline </div><div>This is done</div>" | scrape '<div>([^ ]*) (.*?)</div>'
+Would output:
+{This} {is text one}
+{This} {is text two}
+{This} {text
+has a newline}
+{This} {is done}
+
+Also, it has optional delimeters to help narrow down the search.
+For instance: scrape -s '<body[^>]*>' -e'</body>' '<p>(.*?)</p>'
+Would go through and pull all paragraphs out of (assumedly) an html page without even considering the stuff outside of the body.
+
+Also, though I'm not quite sure how I'd like to plug it in, I'd like to support a continuation capture.
+This would be useful when trying to scrape all the data from a paginated input.
+
+For example, one could pull in an html page with curl, pass it to scrape, then scrape would also output the URL of the "next" link it found, and the loop would start over.
+Ok, so, the best way I can see to do this is to output the capture to stderr.
+So, then, the script that's using scrape can capture this stderr and if it's a URL go back to the top of the loop.
+
+Example:
+curl $URL | scrape -s '<body[^>]*>' -e '</body>' -c '<[^>]*href="([^"]*)"[^>]*>Next' '<p>(.*?)</p>' 2> NEXT_URL 
+
+Would output all paragraphs in a page, and store the url of the next page in NEXT_URL, allowing the script to loop on that.
