@@ -16,6 +16,14 @@ Would output:
 has a newline}
 {This} {is done}
 
+Also fun is:
+curl -L google.com | scrape '<a.*?href="(.*?)".*?>\s*(.*?)\s*</a>'
+Which returns the urls and text of all the links on google's homepage, or any page, in a list like:
+{URL} {TEXT}
+{URL} {TEXT}
+{URL} {TEXT}
+etc.
+
 Also, it will have optional delimeters to help narrow down the search.
 For instance: scrape -s '<body[^>]*>' -e'</body>' '<p>(.*?)</p>'
 Would go through and pull all paragraphs out of (assumedly) an html page without even considering the stuff outside of the body.
