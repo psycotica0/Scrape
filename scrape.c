@@ -3,11 +3,11 @@
 #include <stdio.h>
 
 int main(int argc, char* argv[]) {
-	pcre *pattern;
-	const char *error;
+	pcre* pattern;
+	const char* error;
 	int errOffset;
 	int result;
-	int *captures;
+	int* captures;
 	int captureNumber;
 
 	if (argc <= 2) {
