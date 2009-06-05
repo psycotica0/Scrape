@@ -80,6 +80,7 @@ int main(int argc, char* argv[]) {
 	int* captures;
 	int captureNumber;
 	char* inputBuffer;
+	int startOffset = 0;
 
 	if (argc <= 1) {
 		puts("No Pattern");
@@ -112,20 +113,20 @@ int main(int argc, char* argv[]) {
 		return(EXIT_FAILURE);
 	}
 
-	/* And Run the thing */
-	result = pcre_exec(pattern, NULL, inputBuffer, strlen(inputBuffer), 0, 0, captures, 9);
+	do {
+		/* And Run the thing */
+		result = pcre_exec(pattern, NULL, inputBuffer, strlen(inputBuffer), startOffset, 0, captures, 9);
 
-	if (result == -1) {
-		puts("Match Failed");
-	}else if (result < 0) {
-		printf("Error: %d\n", result);
-	} else {
-		puts("Match Successful");
-		outputMatchCaptures(inputBuffer, captures, captureNumber);
-	}
+		if (result >= 0) {
+			outputMatchCaptures(inputBuffer, captures, captureNumber);
+			/* Update the start to start searching again after the end of the first match */
+			startOffset = captures[1];
+		}
+	} while (result >= 0);
 
 	pcre_free(pattern);
 	free(captures);
 	free(inputBuffer);
+
 	return EXIT_SUCCESS;
 }
