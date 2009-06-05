@@ -2,6 +2,43 @@
 #include <string.h>
 #include <stdio.h>
 
+/*
+This function is used to output a single capture.
+
+I admit I made this kind of tailored to the way I thought I was going to write this thing 
+
+The whole match and length thing is really convenient for this, but kind of strange.
+*/ 
+void outputCapture(char* match, int length) {
+	int i;
+	putchar('{');
+	for (i=0; i < length; i++) {
+		putchar(match[i]);
+	}
+	putchar('}');
+	putchar(' ');
+}
+
+/*
+This function takes in a whole match and outputs each capture.
+*/
+void outputMatchCaptures(char* input, int* captures, int captureNumber) {
+	int i;
+	for (i=1; i<=captureNumber; i++) {
+		int start = (2 * i);
+		int end = (2 * i) + 1;
+
+		if (start == -1 || end == -1) {
+			/* This match is empty */
+			outputCapture(NULL, 0);
+		} else {
+			outputCapture(input + captures[start], captures[end] - captures[start]);
+		}
+	}
+
+	putchar('\n');
+}
+
 int main(int argc, char* argv[]) {
 	pcre* pattern;
 	const char* error;
@@ -37,6 +74,7 @@ int main(int argc, char* argv[]) {
 		printf("Error: %d\n", result);
 	} else {
 		puts("Match Successful");
+		outputMatchCaptures(argv[2], captures, captureNumber);
 	}
 
 	pcre_free(pattern);
