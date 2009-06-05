@@ -1,6 +1,7 @@
 #include <pcre.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 /*
 This function is used to output a single capture.
@@ -39,6 +40,38 @@ void outputMatchCaptures(char* input, int* captures, int captureNumber) {
 	putchar('\n');
 }
 
+/*
+This function returns a string which is all the data from the stream.
+Simple Enough.
+
+I think this might be kind of hacky...
+*/
+char* allTheData(FILE* stream, char* buffer, int size) {
+	int read = 1;
+
+	if (feof(stream)) {
+		return buffer;
+	}
+
+	/* So, I'm adding 1 here to make it so the base case works... */
+	buffer = realloc(buffer, sizeof(char) * (size * 2) + 1);
+	if(buffer == NULL) {
+		return buffer;
+	}
+
+	/* If size is 0, we'll only have room for the Null Character */
+	if (size > 0) {
+		/* I always want to read the next size+1 chars */
+		/* But I want it to start at the null character from the last read */
+		read = fread(buffer + size - 1, sizeof(char), size + 1, stream);
+	}
+
+	/* Null out the last char */
+	buffer[size + read - 1] = '\0';
+
+	return allTheData(stream, buffer, size + read);
+}
+
 int main(int argc, char* argv[]) {
 	pcre* pattern;
 	const char* error;
@@ -46,9 +79,10 @@ int main(int argc, char* argv[]) {
 	int result;
 	int* captures;
 	int captureNumber;
+	char* inputBuffer;
 
-	if (argc <= 2) {
-		puts("Not enough arguments");
+	if (argc <= 1) {
+		puts("No Pattern");
 		return(EXIT_FAILURE);
 	}
 
@@ -66,7 +100,20 @@ int main(int argc, char* argv[]) {
 	/* Also, a successful match requires the same, so add 1 */
 	captures = malloc(sizeof(int) * (captureNumber+1) * 3);
 
-	result = pcre_exec(pattern, NULL, argv[2], strlen(argv[2]), 0, 0, captures, 9);
+	/* Now, pull in the data */
+	inputBuffer = allTheData(stdin, NULL, 0);
+
+	if (inputBuffer == NULL) {
+		pcre_free(pattern);
+		free(captures);
+
+		puts("Error Allocating StdIn");
+
+		return(EXIT_FAILURE);
+	}
+
+	/* And Run the thing */
+	result = pcre_exec(pattern, NULL, inputBuffer, strlen(inputBuffer), 0, 0, captures, 9);
 
 	if (result == -1) {
 		puts("Match Failed");
@@ -74,10 +121,11 @@ int main(int argc, char* argv[]) {
 		printf("Error: %d\n", result);
 	} else {
 		puts("Match Successful");
-		outputMatchCaptures(argv[2], captures, captureNumber);
+		outputMatchCaptures(inputBuffer, captures, captureNumber);
 	}
 
 	pcre_free(pattern);
 	free(captures);
+	free(inputBuffer);
 	return EXIT_SUCCESS;
 }
