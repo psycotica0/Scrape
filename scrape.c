@@ -40,5 +40,6 @@ int main(int argc, char* argv[]) {
 	}
 
 	pcre_free(pattern);
+	free(captures);
 	return EXIT_SUCCESS;
 }
