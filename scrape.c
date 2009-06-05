@@ -7,7 +7,8 @@ int main(int argc, char* argv[]) {
 	const char *error;
 	int errOffset;
 	int result;
-	int captures[9];
+	int *captures;
+	int captureNumber;
 
 	if (argc <= 2) {
 		puts("Not enough arguments");
@@ -21,6 +22,12 @@ int main(int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 	/* pcre_study may speed up compilation on an oft-repeated pattern */
+
+	result = pcre_fullinfo(pattern, NULL, PCRE_INFO_CAPTURECOUNT, &captureNumber);
+
+	/* Every capture requires 2 indecies and a scratch spot */
+	/* Also, a successful match requires the same, so add 1 */
+	captures = malloc(sizeof(int) * (captureNumber+1) * 3);
 
 	result = pcre_exec(pattern, NULL, argv[2], strlen(argv[2]), 0, 0, captures, 9);
 
