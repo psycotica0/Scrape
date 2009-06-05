@@ -16,7 +16,7 @@ Would output:
 has a newline}
 {This} {is done}
 
-Also, it has optional delimeters to help narrow down the search.
+Also, it will have optional delimeters to help narrow down the search.
 For instance: scrape -s '<body[^>]*>' -e'</body>' '<p>(.*?)</p>'
 Would go through and pull all paragraphs out of (assumedly) an html page without even considering the stuff outside of the body.
 
@@ -28,6 +28,6 @@ Ok, so, the best way I can see to do this is to output the capture to stderr.
 So, then, the script that's using scrape can capture this stderr and if it's a URL go back to the top of the loop.
 
 Example:
-curl $URL | scrape -s '<body[^>]*>' -e '</body>' -c '<[^>]*href="([^"]*)"[^>]*>Next' '<p>(.*?)</p>' 2> NEXT_URL 
+curl $URL | scrape -s '<body[^>]*>' -e '</body>' -c '<[^>]*href="([^"]*)"[^>]*>Next' '<p>(.*?)</p>' 2> /tmp/NEXT_URL
 
-Would output all paragraphs in a page, and store the url of the next page in NEXT_URL, allowing the script to loop on that.
+Would output all paragraphs in a page, and store the url of the next page in /tmp/NEXT_URL, allowing the script to loop on that.
