@@ -90,6 +90,7 @@ int main(int argc, char* argv[]) {
 	int* captures;
 	int captureNumber;
 	char* inputBuffer;
+	int inputBufferSize;
 	int startOffset = 0;
 	/* These Hold Pointers to the Various Patterns */
 	char* startPattern = NULL;
@@ -183,9 +184,11 @@ int main(int argc, char* argv[]) {
 		return(EXIT_FAILURE);
 	}
 
+	inputBufferSize = strlen(inputBuffer);
+
 	/* Find the starting offset */
 	if (sPattern != NULL) {
-		result = pcre_exec(sPattern, NULL, inputBuffer, strlen(inputBuffer), 0, 0, captures, (captureNumber+1)*3);
+		result = pcre_exec(sPattern, NULL, inputBuffer, inputBufferSize, 0, 0, captures, (captureNumber+1)*3);
 		if (result >= 0) {
 			startOffset = captures[1];
 		}
@@ -193,16 +196,18 @@ int main(int argc, char* argv[]) {
 
 	/* Find the ending */
 	if (ePattern != NULL) {
-		result = pcre_exec(ePattern, NULL, inputBuffer, strlen(inputBuffer), startOffset, 0, captures, (captureNumber+1)*3);
+		result = pcre_exec(ePattern, NULL, inputBuffer, inputBufferSize, startOffset, 0, captures, (captureNumber+1)*3);
 		if (result >= 0) {
 			/* If we've found the end pattern, just close off the input buffer there */
 			inputBuffer[captures[0]] = '\0';
+			/* Now we need to recompute the size */
+			inputBufferSize = strlen(inputBuffer);
 		}
 	}
 
 	do {
 		/* And Run the thing */
-		result = pcre_exec(pattern, NULL, inputBuffer, strlen(inputBuffer), startOffset, 0, captures, (captureNumber+1)*3);
+		result = pcre_exec(pattern, NULL, inputBuffer, inputBufferSize, startOffset, 0, captures, (captureNumber+1)*3);
 
 		if (result >= 0) {
 			outputMatchCaptures(inputBuffer, captures, captureNumber);
