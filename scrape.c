@@ -4,8 +4,16 @@
 #include <errno.h>
 #include <unistd.h>
 
-/* This may or may not be really gross. */
-#define FREE(var) if (var != NULL) free(var);
+#define CLEAN \
+if (pattern != NULL) pcre_free(pattern);\
+if (sPattern != NULL) pcre_free(sPattern);\
+if (ePattern != NULL) pcre_free(ePattern);\
+if (studied != NULL) free(studied);\
+if (captures != NULL) free(captures);\
+if (inputBuffer != NULL) free(inputBuffer);\
+if (startPattern != NULL) free(startPattern);\
+if (endPattern != NULL) free(endPattern);\
+if (itemPattern != NULL) free(itemPattern);\
 
 /*
 This function is used to output a single capture.
@@ -110,6 +118,8 @@ int main(int argc, char* argv[]) {
 			case '?':
 			default:
 				help();
+				/* This will probably not do anything, but I'll put it here incase it does at some point */
+				CLEAN;
 				return(EXIT_FAILURE);
 		}
 	}
@@ -117,8 +127,7 @@ int main(int argc, char* argv[]) {
 	if (argc <= optind) {
 		puts("No Pattern");
 		help();
-		FREE(startPattern);
-		FREE(endPattern);
+		CLEAN;
 		return(EXIT_FAILURE);
 	}
 
@@ -128,9 +137,7 @@ int main(int argc, char* argv[]) {
 
 	if (pattern == NULL) {
 		fprintf(stderr, "Failure in Main Pattern: %s\n",error);
-		FREE(startPattern);
-		FREE(endPattern);
-		FREE(itemPattern);
+		CLEAN;
 		return EXIT_FAILURE;
 	}
 
@@ -143,10 +150,7 @@ int main(int argc, char* argv[]) {
 		sPattern = pcre_compile(startPattern, 0, &error, &errOffset, NULL);
 		if (sPattern == NULL) {
 			fprintf(stderr, "Failure in Starting Pattern: %s\n",error);
-			pcre_free(pattern);
-			FREE(startPattern);
-			FREE(endPattern);
-			FREE(itemPattern);
+			CLEAN;
 			return EXIT_FAILURE;
 		}
 	}
@@ -156,11 +160,7 @@ int main(int argc, char* argv[]) {
 		ePattern = pcre_compile(endPattern, 0, &error, &errOffset, NULL);
 		if (ePattern == NULL) {
 			fprintf(stderr, "Failure in Ending Pattern: %s\n",error);
-			pcre_free(pattern);
-			if (sPattern != NULL) pcre_free(sPattern);
-			FREE(startPattern);
-			FREE(endPattern);
-			FREE(itemPattern);
+			CLEAN;
 			return EXIT_FAILURE;
 		}
 	}
@@ -175,16 +175,8 @@ int main(int argc, char* argv[]) {
 	inputBuffer = allTheData(stdin, NULL, 0);
 
 	if (inputBuffer == NULL) {
-		pcre_free(pattern);
-		if (sPattern != NULL) pcre_free(sPattern);
-		if (ePattern != NULL) pcre_free(ePattern);
-		free(captures);
-		FREE(startPattern);
-		FREE(endPattern);
-		FREE(itemPattern);
-
 		puts("Error Allocating StdIn");
-
+		CLEAN;
 		return(EXIT_FAILURE);
 	}
 
@@ -220,14 +212,6 @@ int main(int argc, char* argv[]) {
 		}
 	} while (result >= 0);
 
-	pcre_free(pattern);
-	if (sPattern != NULL) pcre_free(sPattern);
-	if (ePattern != NULL) pcre_free(ePattern);
-	free(captures);
-	free(inputBuffer);
-	FREE(startPattern);
-	FREE(endPattern);
-	FREE(itemPattern);
-
+	CLEAN;
 	return EXIT_SUCCESS;
 }
