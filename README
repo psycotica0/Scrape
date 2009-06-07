@@ -35,11 +35,12 @@ Each takes a string argument.
 -d is the string placed between fields
 So, by default, -b'{' -a'}' -d' '.
 
-Also, though I'm not quite sure how I'd like to plug it in, I'd like to support a continuation capture.
-This would be useful when trying to scrape all the data from a paginated input.
+It also supports what I call a Continuation Pattern.
+This is useful when trying to scrape all the data from a paginated input.
 
 For example, one could pull in an html page with curl, pass it to scrape, then scrape would also output the URL of the "next" link it found, and the loop would start over.
-Ok, so, the best way I can see to do this is to output the capture to stderr.
+
+Currently this works by outputing the first capture of the pattern to stderr.
 So, then, the script that's using scrape can capture this stderr and if it's a URL go back to the top of the loop.
 
 Example:
