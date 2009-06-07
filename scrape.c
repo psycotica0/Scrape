@@ -2,6 +2,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
+
+/* This may or may not be really gross. */
+#define FREE(var) if (var != NULL) free(var);
 
 /*
 This function is used to output a single capture.
@@ -81,16 +85,39 @@ int main(int argc, char* argv[]) {
 	int captureNumber;
 	char* inputBuffer;
 	int startOffset = 0;
+	/* These Hold Pointers to the Various Patterns */
+	char* startPattern = NULL;
+	char* endPattern = NULL;
+	char * itemPattern = NULL;
+	char flag;
 
-	if (argc <= 1) {
+	while ((flag = getopt(argc, argv, "s:e:")) != -1) {
+		switch (flag) {
+			case 's':
+				startPattern = strdup(optarg);
+				break;
+			case 'e':
+				endPattern = strdup(optarg);
+				break;
+		}
+	}
+
+	if (argc <= optind) {
 		puts("No Pattern");
+		FREE(startPattern);
+		FREE(endPattern);
 		return(EXIT_FAILURE);
 	}
 
-	pattern = pcre_compile(argv[1], 0, &error, &errOffset, NULL);
+	itemPattern = strdup(argv[optind]);
+
+	pattern = pcre_compile(itemPattern, 0, &error, &errOffset, NULL);
 
 	if (pattern == NULL) {
 		puts(error);
+		FREE(startPattern);
+		FREE(endPattern);
+		FREE(itemPattern);
 		return EXIT_FAILURE;
 	}
 	/* pcre_study may speed up compilation on an oft-repeated pattern */
@@ -107,6 +134,9 @@ int main(int argc, char* argv[]) {
 	if (inputBuffer == NULL) {
 		pcre_free(pattern);
 		free(captures);
+		FREE(startPattern);
+		FREE(endPattern);
+		FREE(itemPattern);
 
 		puts("Error Allocating StdIn");
 
@@ -127,6 +157,9 @@ int main(int argc, char* argv[]) {
 	pcre_free(pattern);
 	free(captures);
 	free(inputBuffer);
+	FREE(startPattern);
+	FREE(endPattern);
+	FREE(itemPattern);
 
 	return EXIT_SUCCESS;
 }
