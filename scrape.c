@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
 	/* These Hold Pointers to the Various Patterns */
 	char* startPattern = NULL;
 	char* endPattern = NULL;
-	char * itemPattern = NULL;
+	char* itemPattern = NULL;
 	char flag;
 
 	while ((flag = getopt(argc, argv, "s:e:")) != -1) {
