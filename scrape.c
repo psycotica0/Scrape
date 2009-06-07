@@ -14,6 +14,9 @@ if (inputBuffer != NULL) free(inputBuffer);\
 if (startPattern != NULL) free(startPattern);\
 if (endPattern != NULL) free(endPattern);\
 if (itemPattern != NULL) free(itemPattern);\
+if (before != NULL) free(before);\
+if (after != NULL) free(after);\
+if (separator != NULL) free(separator);\
 
 /*
 This function is used to output a single capture.
@@ -22,20 +25,20 @@ I admit I made this kind of tailored to the way I thought I was going to write t
 
 The whole match and length thing is really convenient for this, but kind of strange.
 */ 
-void outputCapture(char* match, int length) {
+void outputCapture(char* match, int length, char* before, char* after) {
 	int i;
-	putchar('{');
+	/* I've used fputs because it doesn't append a newline */
+	fputs(before, stdout);
 	for (i=0; i < length; i++) {
 		putchar(match[i]);
 	}
-	putchar('}');
-	putchar(' ');
+	fputs(after, stdout);
 }
 
 /*
 This function takes in a whole match and outputs each capture.
 */
-void outputMatchCaptures(char* input, int* captures, int captureNumber) {
+void outputMatchCaptures(char* input, int* captures, int captureNumber, char* before, char* after, char * separator) {
 	int i;
 	for (i=1; i<=captureNumber; i++) {
 		int start = (2 * i);
@@ -43,9 +46,14 @@ void outputMatchCaptures(char* input, int* captures, int captureNumber) {
 
 		if (start == -1 || end == -1) {
 			/* This match is empty */
-			outputCapture(NULL, 0);
+			outputCapture(NULL, 0, before, after);
 		} else {
-			outputCapture(input + captures[start], captures[end] - captures[start]);
+			outputCapture(input + captures[start], captures[end] - captures[start], before, after);
+		}
+
+		if (i+1 <= captureNumber) {
+			/* This isn't the last one */
+			fputs(separator, stdout);
 		}
 	}
 
@@ -106,14 +114,27 @@ int main(int argc, char* argv[]) {
 	char* endPattern = NULL;
 	char* itemPattern = NULL;
 	char flag;
+	/* These hold the various delimiters */
+	char* before = NULL;
+	char* after = NULL;
+	char* separator = NULL;
 
-	while ((flag = getopt(argc, argv, "s:e:")) != -1) {
+	while ((flag = getopt(argc, argv, "s:e:b:a:d:")) != -1) {
 		switch (flag) {
 			case 's':
 				startPattern = strdup(optarg);
 				break;
 			case 'e':
 				endPattern = strdup(optarg);
+				break;
+			case 'a':
+				after = strdup(optarg);
+				break;
+			case 'b':
+				before = strdup(optarg);
+				break;
+			case 'd':
+				separator = strdup(optarg);
 				break;
 			case '?':
 			default:
@@ -201,12 +222,17 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	/* If we don't have any separators yet, us the standard */
+	if (before == NULL) before = strdup("{");
+	if (after == NULL) after = strdup("}");
+	if (separator == NULL) separator = strdup(" ");
+
 	do {
 		/* And Run the thing */
 		result = pcre_exec(pattern, studied, inputBuffer, inputBufferSize, startOffset, 0, captures, (captureNumber+1)*3);
 
 		if (result >= 0) {
-			outputMatchCaptures(inputBuffer, captures, captureNumber);
+			outputMatchCaptures(inputBuffer, captures, captureNumber, before, after, separator);
 			/* Update the start to start searching again after the end of the first match */
 			startOffset = captures[1];
 		}
