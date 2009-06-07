@@ -81,7 +81,9 @@ void help() {
 }
 
 int main(int argc, char* argv[]) {
-	pcre* pattern;
+	pcre* pattern = NULL;
+	pcre* sPattern = NULL;
+	pcre* ePattern = NULL;
 	const char* error;
 	int errOffset;
 	int result;
@@ -131,6 +133,33 @@ int main(int argc, char* argv[]) {
 	}
 	/* pcre_study may speed up compilation on an oft-repeated pattern */
 
+	/* Compile the starting pattern, if we have one */
+	if (startPattern != NULL) {
+		sPattern = pcre_compile(startPattern, 0, &error, &errOffset, NULL);
+		if (sPattern == NULL) {
+			puts(error);
+			pcre_free(pattern);
+			FREE(startPattern);
+			FREE(endPattern);
+			FREE(itemPattern);
+			return EXIT_FAILURE;
+		}
+	}
+
+	/* Compile the ending pattern, if we have one */
+	if (endPattern != NULL) {
+		ePattern = pcre_compile(endPattern, 0, &error, &errOffset, NULL);
+		if (ePattern == NULL) {
+			puts(error);
+			pcre_free(pattern);
+			if (sPattern != NULL) pcre_free(sPattern);
+			FREE(startPattern);
+			FREE(endPattern);
+			FREE(itemPattern);
+			return EXIT_FAILURE;
+		}
+	}
+
 	result = pcre_fullinfo(pattern, NULL, PCRE_INFO_CAPTURECOUNT, &captureNumber);
 
 	/* Every capture requires 2 indecies and a scratch spot */
@@ -142,6 +171,8 @@ int main(int argc, char* argv[]) {
 
 	if (inputBuffer == NULL) {
 		pcre_free(pattern);
+		if (sPattern != NULL) pcre_free(sPattern);
+		if (ePattern != NULL) pcre_free(ePattern);
 		free(captures);
 		FREE(startPattern);
 		FREE(endPattern);
@@ -150,6 +181,23 @@ int main(int argc, char* argv[]) {
 		puts("Error Allocating StdIn");
 
 		return(EXIT_FAILURE);
+	}
+
+	/* Find the starting offset */
+	if (sPattern != NULL) {
+		result = pcre_exec(sPattern, NULL, inputBuffer, strlen(inputBuffer), 0, 0, captures, (captureNumber+1)*3);
+		if (result >= 0) {
+			startOffset = captures[1];
+		}
+	}
+
+	/* Find the ending */
+	if (ePattern != NULL) {
+		result = pcre_exec(ePattern, NULL, inputBuffer, strlen(inputBuffer), startOffset, 0, captures, (captureNumber+1)*3);
+		if (result >= 0) {
+			/* If we've found the end pattern, just close off the input buffer there */
+			inputBuffer[captures[0]] = '\0';
+		}
 	}
 
 	do {
@@ -164,6 +212,8 @@ int main(int argc, char* argv[]) {
 	} while (result >= 0);
 
 	pcre_free(pattern);
+	if (sPattern != NULL) pcre_free(sPattern);
+	if (ePattern != NULL) pcre_free(ePattern);
 	free(captures);
 	free(inputBuffer);
 	FREE(startPattern);
