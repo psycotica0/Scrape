@@ -4,7 +4,7 @@ This program is to be used to easily parse out either single items or lists of i
 
 It works by being given a Perl Compatible Regular Expression, assumedly with captures, that represents each item in the list of things you want to scrape from a stream.
 It then outputs, in order, all of the captures from all occurences of that regexp found in the stream.
-The captures are all wrapped in curly braces, and while a capture may contain newlines, each set of wrapped captures for each item will take up only a line.
+The captures are, by default, all wrapped in curly braces, and while a capture may contain newlines, each set of wrapped captures for each item will take up only a line.
 
 For example:
 echo "<div>This is text one</div><div>This is text two</div><div>This text
@@ -27,6 +27,13 @@ etc.
 Also, it has optional delimeters to help narrow down the search.
 For instance: scrape -s '<body[^>]*>' -e'</body>' '<p>(.*?)</p>'
 Would go through and pull all paragraphs out of (assumedly) an html page without even considering the stuff outside of the body.
+
+To change the output the flags "a","b", and "d" can be used.
+Each takes a string argument.
+-b is the string placed before the field
+-a is the string placed after the field
+-d is the string placed between fields
+So, by default, -b'{' -a'}' -d' '.
 
 Also, though I'm not quite sure how I'd like to plug it in, I'd like to support a continuation capture.
 This would be useful when trying to scrape all the data from a paginated input.

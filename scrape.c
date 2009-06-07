@@ -93,7 +93,7 @@ char* allTheData(FILE* stream, char* buffer, int size) {
 }
 
 void help() {
-	puts("scrape [-s StartPattern] [-e EndPattern] ItemPattern\nThis program takes in stdin and an ItemPattern PCRE and lists the captures from every match of ItemPattern on the stdin of the program.\n\nOptions:\n -s StartPattern: Scrape will only start looking for ItemPattern after it's found the first occurance of StartPattern.\n -e EndPattern: Scrape will stop looking for ItemPattern after it finds EndPattern.");
+	puts("scrape [-s StartPattern] [-e EndPattern] ItemPattern\nThis program takes in stdin and an ItemPattern PCRE and lists the captures from every match of ItemPattern on the stdin of the program.\n\nOptions:\n -s StartPattern: Scrape will only start looking for ItemPattern after it's found the first occurance of StartPattern.\n -e EndPattern: Scrape will stop looking for ItemPattern after it finds EndPattern.\n -b String: The given String will be put before every field in the output\n  Default:'{'\n -a String: The given String will be put after every field in the output\n  Default:'}'\n -d String: The given String will be put between fields in the output\n  Default:' '");
 }
 
 int main(int argc, char* argv[]) {
