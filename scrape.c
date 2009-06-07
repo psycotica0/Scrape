@@ -104,9 +104,9 @@ int main(int argc, char* argv[]) {
 	const char* error;
 	int errOffset;
 	int result;
-	int* captures;
+	int* captures = NULL;
 	int captureNumber;
-	char* inputBuffer;
+	char* inputBuffer = NULL;
 	int inputBufferSize;
 	int startOffset = 0;
 	/* These Hold Pointers to the Various Patterns */
