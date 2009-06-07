@@ -84,6 +84,7 @@ int main(int argc, char* argv[]) {
 	pcre* pattern = NULL;
 	pcre* sPattern = NULL;
 	pcre* ePattern = NULL;
+	pcre_extra* studied = NULL;
 	const char* error;
 	int errOffset;
 	int result;
@@ -132,7 +133,10 @@ int main(int argc, char* argv[]) {
 		FREE(itemPattern);
 		return EXIT_FAILURE;
 	}
-	/* pcre_study may speed up compilation on an oft-repeated pattern */
+
+	/* pcre_study may speed up execution of an oft-repeated pattern */
+	studied = pcre_study(pattern, 0, &error);
+	/* If it fails, I don't really care. */
 
 	/* Compile the starting pattern, if we have one */
 	if (startPattern != NULL) {
@@ -207,7 +211,7 @@ int main(int argc, char* argv[]) {
 
 	do {
 		/* And Run the thing */
-		result = pcre_exec(pattern, NULL, inputBuffer, inputBufferSize, startOffset, 0, captures, (captureNumber+1)*3);
+		result = pcre_exec(pattern, studied, inputBuffer, inputBufferSize, startOffset, 0, captures, (captureNumber+1)*3);
 
 		if (result >= 0) {
 			outputMatchCaptures(inputBuffer, captures, captureNumber);
