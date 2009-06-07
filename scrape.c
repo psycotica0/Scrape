@@ -76,6 +76,10 @@ char* allTheData(FILE* stream, char* buffer, int size) {
 	return allTheData(stream, buffer, size + read);
 }
 
+void help() {
+	puts("scrape [-s StartPattern] [-e EndPattern] ItemPattern\nThis program takes in stdin and an ItemPattern PCRE and lists the captures from every match of ItemPattern on the stdin of the program.\n\nOptions:\n -s StartPattern: Scrape will only start looking for ItemPattern after it's found the first occurance of StartPattern.\n -e EndPattern: Scrape will stop looking for ItemPattern after it finds EndPattern.");
+}
+
 int main(int argc, char* argv[]) {
 	pcre* pattern;
 	const char* error;
@@ -99,11 +103,16 @@ int main(int argc, char* argv[]) {
 			case 'e':
 				endPattern = strdup(optarg);
 				break;
+			case '?':
+			default:
+				help();
+				return(EXIT_FAILURE);
 		}
 	}
 
 	if (argc <= optind) {
 		puts("No Pattern");
+		help();
 		FREE(startPattern);
 		FREE(endPattern);
 		return(EXIT_FAILURE);
