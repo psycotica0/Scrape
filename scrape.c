@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
 	pattern = pcre_compile(itemPattern, 0, &error, &errOffset, NULL);
 
 	if (pattern == NULL) {
-		puts(error);
+		fprintf(stderr, "Failure in Main Pattern: %s\n",error);
 		FREE(startPattern);
 		FREE(endPattern);
 		FREE(itemPattern);
@@ -137,7 +137,7 @@ int main(int argc, char* argv[]) {
 	if (startPattern != NULL) {
 		sPattern = pcre_compile(startPattern, 0, &error, &errOffset, NULL);
 		if (sPattern == NULL) {
-			puts(error);
+			fprintf(stderr, "Failure in Starting Pattern: %s\n",error);
 			pcre_free(pattern);
 			FREE(startPattern);
 			FREE(endPattern);
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
 	if (endPattern != NULL) {
 		ePattern = pcre_compile(endPattern, 0, &error, &errOffset, NULL);
 		if (ePattern == NULL) {
-			puts(error);
+			fprintf(stderr, "Failure in Ending Pattern: %s\n",error);
 			pcre_free(pattern);
 			if (sPattern != NULL) pcre_free(sPattern);
 			FREE(startPattern);
