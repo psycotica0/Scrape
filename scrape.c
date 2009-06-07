@@ -8,6 +8,7 @@
 if (pattern != NULL) pcre_free(pattern);\
 if (sPattern != NULL) pcre_free(sPattern);\
 if (ePattern != NULL) pcre_free(ePattern);\
+if (cPattern != NULL) pcre_free(cPattern);\
 if (studied != NULL) free(studied);\
 if (captures != NULL) free(captures);\
 if (inputBuffer != NULL) free(inputBuffer);\
@@ -100,6 +101,7 @@ int main(int argc, char* argv[]) {
 	pcre* pattern = NULL;
 	pcre* sPattern = NULL;
 	pcre* ePattern = NULL;
+	pcre* cPattern = NULL;
 	pcre_extra* studied = NULL;
 	const char* error;
 	int errOffset;
@@ -113,19 +115,23 @@ int main(int argc, char* argv[]) {
 	char* startPattern = NULL;
 	char* endPattern = NULL;
 	char* itemPattern = NULL;
+	char* continuePattern = NULL;
 	char flag;
 	/* These hold the various delimiters */
 	char* before = NULL;
 	char* after = NULL;
 	char* separator = NULL;
 
-	while ((flag = getopt(argc, argv, "s:e:b:a:d:")) != -1) {
+	while ((flag = getopt(argc, argv, "s:e:c:b:a:d:")) != -1) {
 		switch (flag) {
 			case 's':
 				startPattern = strdup(optarg);
 				break;
 			case 'e':
 				endPattern = strdup(optarg);
+				break;
+			case 'c':
+				continuePattern = strdup(optarg);
 				break;
 			case 'a':
 				after = strdup(optarg);
@@ -186,6 +192,16 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	/* Compile the continuing pattern, if we have one */
+	if (continuePattern != NULL) {
+		cPattern = pcre_compile(continuePattern, 0, &error, &errOffset, NULL);
+		if (ePattern == NULL) {
+			fprintf(stderr, "Failure in Continuing Pattern: %s\n",error);
+			CLEAN;
+			return EXIT_FAILURE;
+		}
+	}
+
 	result = pcre_fullinfo(pattern, NULL, PCRE_INFO_CAPTURECOUNT, &captureNumber);
 
 	/* Every capture requires 2 indecies and a scratch spot */
@@ -219,6 +235,18 @@ int main(int argc, char* argv[]) {
 			inputBuffer[captures[0]] = '\0';
 			/* Now we need to recompute the size */
 			inputBufferSize = strlen(inputBuffer);
+		}
+	}
+
+	/* Find the Continuation */
+	if (cPattern != NULL) {
+		result = pcre_exec(cPattern, NULL, inputBuffer, inputBufferSize, startOffset, 0, captures, (captureNumber+1)*3);
+		if (result >= 1) {
+			int i;
+			/* If we've found the end pattern, spit the first capture to stderr */
+			for (i=captures[2]; i<=captures[3]; i++) {
+				fputc(inputBuffer[i], stderr);
+			}
 		}
 	}
 
