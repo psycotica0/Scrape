@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
 
 	do {
 		/* And Run the thing */
-		result = pcre_exec(pattern, NULL, inputBuffer, strlen(inputBuffer), startOffset, 0, captures, 9);
+		result = pcre_exec(pattern, NULL, inputBuffer, strlen(inputBuffer), startOffset, 0, captures, (captureNumber+1)*3);
 
 		if (result >= 0) {
 			outputMatchCaptures(inputBuffer, captures, captureNumber);
