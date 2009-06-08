@@ -244,7 +244,7 @@ int main(int argc, char* argv[]) {
 		if (result >= 1) {
 			int i;
 			/* If we've found the end pattern, spit the first capture to stderr */
-			for (i=captures[2]; i<=captures[3]; i++) {
+			for (i=captures[2]; i<captures[3]; i++) {
 				fputc(inputBuffer[i], stderr);
 			}
 		}
