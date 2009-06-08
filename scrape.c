@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
 	/* Compile the continuing pattern, if we have one */
 	if (continuePattern != NULL) {
 		cPattern = pcre_compile(continuePattern, 0, &error, &errOffset, NULL);
-		if (ePattern == NULL) {
+		if (cPattern == NULL) {
 			fprintf(stderr, "Failure in Continuing Pattern: %s\n",error);
 			CLEAN;
 			return EXIT_FAILURE;
