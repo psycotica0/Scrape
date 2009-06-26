@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
 
 	itemPattern = strdup(argv[optind]);
 
-	pattern = pcre_compile(itemPattern, 0, &error, &errOffset, NULL);
+	pattern = pcre_compile(itemPattern, PCRE_DOTALL, &error, &errOffset, NULL);
 
 	if (pattern == NULL) {
 		fprintf(stderr, "Failure in Main Pattern: %s\n",error);
